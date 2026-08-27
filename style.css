@@ -1,108 +1,182 @@
+/* ============================================================
+   The Tea Cozy — Codecademy exercise
+   Annotated as a reference for future static sites.
+   Comments explain WHY, not what.
+   ============================================================ */
+
+
 /* ----- Base / global styles ----- */
 
+/* Universal selector: matches every element on the page.
+   border-box makes width/height INCLUDE padding and border,
+   instead of adding them on top. Without this, `height: 100px`
+   plus `padding: 10px` renders as 120px and every measurement
+   in a redline stops matching what you see. Standard reset —
+   put it at the top of every stylesheet. */
 * {
   box-sizing: border-box;
 }
 
+/* Global styles go on `body` because font-family, font-size,
+   color and text-align are INHERITED: children get them
+   automatically unless something overrides. Set once here
+   rather than repeating on every section. */
 body {
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;  /* Helvetica is often missing off macOS — always give fallbacks */
   font-size: 22px;
   color: seashell;
-  background-color: black;
-  opacity: 0.9;
+  background-color: black;   /* NOT inherited, but body covers the viewport so it reads as the page background */
+  opacity: 0.9;              /* NOT inherited either — but it dims this element and ALL children as one rendered
+                                layer, and a child cannot opt back out with opacity: 1. That includes the fixed
+                                header, so page content shows faintly through it while scrolling.
+                                Alternative if you only want a translucent BACKGROUND with crisp text:
+                                drop opacity and use background-color: rgba(0, 0, 0, 0.9) instead. */
   text-align: center;
-  padding: 10px;
+  padding: 10px;             /* NB: this is what pushes the fixed header off-centre — see `header` below */
 }
 
+/* Links do NOT inherit `color` from body: the browser's own
+   stylesheet sets a:link blue / a:visited purple, and a direct
+   rule always beats an inherited value. So restating it here is
+   required, not redundant.
+   (Adding `text-decoration: none` here would remove the
+   underline — deliberately left off, the nav should stay
+   underlined.) */
 a {
   color: seashell;
 }
 
+/* `position: fixed` takes the header OUT of the normal document
+   flow, so nothing below reserves space for it and the top of
+   #mission would sit underneath. This padding pushes the content
+   clear. 80px rather than 69px because the header can wrap onto
+   a second row on narrow screens — a fixed number is a rough
+   fix; a precise one needs a media query. */
 main {
   padding-top: 80px;
 }
+
 
 /* ----- Header ---- */
 
 header {
   position: fixed;
-  width: 100%;
-  min-height: 69px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: black;
-  border-bottom: 1px solid seashell;
-  z-index: 1;
-  flex-wrap: wrap;
-  top: 0;
+  top: 0;                    /* Required. `fixed` alone does NOT move an element to a corner — it freezes it
+                                wherever it would normally have sat. Body's 10px padding means that spot is
+                                10px in from the left, while width: 100% still spans the full viewport, so the
+                                header would hang 10px off the right edge and add a horizontal scrollbar.
+                                top/left: 0 pins it to the actual window corner. */
   left: 0;
+  width: 100%;               /* For a fixed element, 100% = the viewport, NOT the padded parent */
+  min-height: 69px;          /* min-height, not height: a hard `height` would cap the box, and once the nav
+                                wraps to a second row the extra content spills out over the page below */
+  display: flex;
+  flex-wrap: wrap;           /* Lets the nav drop below the logo when space runs out */
+  align-items: center;
+  justify-content: space-between;  /* Logo left, nav right */
+  background-color: black;   /* Needed explicitly: content scrolls UNDER a fixed header, and without an opaque
+                                background it would show through */
+  border-bottom: 1px solid seashell;
+  z-index: 1;                /* Stacks the header above the scrolling content */
 }
 
 header .logo {
-  height: 50px;
+  height: 50px;              /* Set height only — width follows automatically, preserving the aspect ratio */
   margin-left: 10px;
 }
 
 nav ul {
   display: flex;
-  padding: 0 10px 0 0;
-  list-style: none;
-  flex-wrap: wrap;
-  margin: 0;
+  flex-wrap: wrap;           /* By default flex items are forced onto ONE line and shrink past their content
+                                rather than moving down. This is what makes the nav go vertical when cramped. */
+  list-style: none;          /* Removes the default bullets */
+  margin: 0;                 /* Browsers give <ul> a default top/bottom margin (~16px each) which would
+                                otherwise inflate the header past its intended height */
+  padding: 0 10px 0 0;       /* Shorthand order is clockwise from top: top, right, bottom, left */
 }
 
 nav ul li a {
-  display: block;
+  display: block;            /* <a> is inline by default, and inline elements ignore vertical padding for
+                                layout purposes. `block` makes the padding below create a real, larger
+                                click target covering the whole menu item. */
   padding: 10px;
+  /* Worth adding if links ever collide when squeezed:
+     white-space: nowrap;  — stops "Featured Tea" breaking across two lines */
 }
+
 
 /* ----- Mission section ----- */
 
+/* PATTERN: full-bleed hero image with a text band over it.
+   Reusable for the top of almost any brochure site. */
 #mission {
-  height: 700px;
+  height: 700px;             /* ESSENTIAL. A background image occupies no space of its own — an empty section
+                                collapses to the height of its text and the image never appears. The height is
+                                what makes the background visible. */
   background-image: url("images/img-mission-background.jpg");
-  background-size: cover;
-  background-position: center;
+                             /* NB: url() resolves relative to the STYLESHEET's location, not the HTML file's.
+                                Fine here (both in the same folder) — but if style.css ever moves into css/,
+                                this becomes ../images/... while the HTML paths stay put. */
+  background-size: cover;    /* Scale to fill the box, cropping the overflow. Without it the image renders at
+                                its natural size and TILES to fill the space. */
+  background-position: center;  /* Which part survives the crop */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;       /* Vertical centring of .content within the 700px */
+  justify-content: center;   /* Horizontal centring */
 }
 
 #mission .content {
   background-color: black;
   width: 100%;
-  padding: 10px;
+  padding: 10px;             /* Not just for looks: without padding or a border on the parent, the first
+                                child's top margin COLLAPSES THROUGH it — the <h2>'s margin ends up outside
+                                the black band, leaving a bare gap above it. Any padding stops the collapse. */
 }
+
 
 /* ----- Store section ----- */
 
 #store {
-  padding: 70px 0;
+  padding: 70px 0;           /* Two values = top/bottom, then left/right */
 }
 
+/* PATTERN: wrapping photo grid.
+   The workhorse layout for team photos, products, services. */
 .items {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap;           /* Cards drop to a new row instead of squashing */
   justify-content: center;
+  /* KNOWN LIMITATION: with an incomplete final row (5 items in a 3-wide layout),
+     justify-content: center centres the orphans rather than aligning them with the
+     columns above. CSS Grid handles this properly — worth learning next. */
 }
 
 .item {
   padding: 10px;
-  margin: 10px;
+  margin: 10px;              /* Gaps BETWEEN cards. Note `border: 10px` would do nothing here — the border
+                                shorthand needs a style, and border-style defaults to none, so a width alone
+                                is never drawn. */
 }
 
 .item img {
   height: 200px;
-  display: block;
-  margin: 0 auto;
+  display: block;            /* <img> is inline by default; inline elements sit on a text baseline, which adds
+                                a few px of mystery whitespace underneath. `block` removes it and also lets
+                                margin: 0 auto work. */
+  margin: 0 auto;            /* Two values = top/bottom 0, left/right auto. `auto` splits the leftover
+                                horizontal space evenly, which IS horizontal centring. Only works if the
+                                element is narrower than its parent, and only horizontally. */
+  /* NB for real sites: no width control, no srcset, no lazy loading, no aspect-ratio handling here.
+     Fine for 5 small tutorial JPEGs — img-bedford-bizarre.jpg is 1.9MB for a 200px thumbnail, which
+     would be unacceptable on a client site. The layout is the easy part; the image pipeline isn't. */
 }
 
 .item span {
-  display: block;
+  display: block;            /* <span> is inline — block puts the caption on its own line under the image */
   padding-top: 10px;
   font-weight: bold;
 }
+
 
 /* ----- Locations section ----- */
 
@@ -110,23 +184,34 @@ nav ul li a {
   background-image: url("images/img-locations-background.jpg");
   background-size: cover;
   background-position: center;
-  padding: 70px 0;
+  padding: 70px 0;           /* Here the padding (not a fixed height) is what gives the background something
+                                to fill — the three cards inside already supply most of the height */
 }
 
 .locations-list {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  max-width: 1100px;
-  margin: 0 auto;
+  max-width: 1100px;         /* max-width, NOT width. A fixed `width: 1100px` is wider than the parent on any
+                                screen under 1100px — no leftover space, so `auto` resolves to 0 and the
+                                centring silently stops working. max-width means "up to 1100, shrink if
+                                smaller", so it centres at every screen size.
+                                GENERAL RULE: max-width over width on any centred container. */
+  margin: 0 auto;            /* Centres the container itself */
 }
 
 .location {
-  background-color: black;
-  flex-basis: 280px;
+  background-color: black;   /* Opaque card so the text stays readable over the background photo */
+  flex-basis: 280px;         /* Flex's version of a starting width */
   margin: 5px 20px;
   padding: 10px;
+  /* HISTORICAL BUG worth remembering: this block once had no semicolon after `flex-basis: 280px`.
+     CSS then parsed `flex-basis: 280px margin: 5px 20px;` as ONE invalid declaration and silently
+     discarded BOTH properties. No error, no warning — the rule just vanished.
+     CSS FAILS SILENTLY: when a property "doesn't work", check the line ABOVE it first.
+     Firefox DevTools flags invalid declarations with a warning triangle — the fastest way to spot this. */
 }
+
 
 /* ----- Contact section ----- */
 
@@ -134,10 +219,12 @@ nav ul li a {
   padding: 40px 0;
 }
 
+
 /* ----- Footer section ----- */
 
 footer {
-  text-align: left;
+  text-align: left;          /* Overrides the inherited `center` from body — an inherited value is easy to
+                                override locally; that's the whole point of setting defaults globally */
   padding: 10px 20px;
   font-size: 16px;
 }
