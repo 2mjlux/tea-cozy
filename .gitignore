@@ -1,0 +1,5 @@
+# Geany
+*.geany
+
+# OS
+.DS_Store
